@@ -3,12 +3,12 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-def tumor_extraction(image_name, n):
+def tumor_segmentation(imageName, nSlice):
     # Se obtiene el slice de interés para trabajar
-    img = nib.load(image_name)
+    img = nib.load(imageName)
     imgData = img.get_fdata()
     a = imgData.shape[2] - 1
-    slice = imgData[:, :, a-n]
+    slice = imgData[:, :, a-nSlice]
 
     # Se normaliza el slice
     zeros = np.zeros((320,320))
@@ -73,38 +73,60 @@ def tumor_extraction(image_name, n):
     edgeRTumor = cv2.cvtColor(edgeRTumor, cv2.COLOR_GRAY2BGR)
     edgeRTumor = edgeRTumor | bgr
 
-    plt.figure(1)
-    plt.subplot(221), plt.imshow(slice, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Slice')
-    plt.subplot(222), plt.imshow(normalizedSlice, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Normalize')
-    plt.subplot(223), plt.imshow(kmeansSlice, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('K-means = 3')
-    plt.subplot(224), plt.imshow(mask, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Mascara binaria')
-    plt.show()
-    plt.figure(2)
-    plt.subplot(121), plt.imshow(edgeMask, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Bordes mascara')
-    plt.subplot(122), plt.imshow(edgeTumor, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Bordes tumor')
-    plt.show()
-    plt.figure(3)
-    plt.subplot(121), plt.imshow(rgb, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Borde rojo mascara')
-    plt.subplot(122), plt.imshow(bgr, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Borde rojo tumor')
-    plt.show()
-    plt.figure(4)
-    plt.subplot(121), plt.imshow(maskErosion, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Erosion')
-    plt.subplot(122), plt.imshow(maskDilation, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Dilatacion')
-    plt.show()
-    plt.figure(5)
-    plt.subplot(121), plt.imshow(edgeSlice, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Slice delineado')
-    plt.subplot(122), plt.imshow(edgeRTumor, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Tumor delineado')
-    plt.show()
+    # Calculo de intensidad
+    intensity = []
+    for i in range(tumor.shape[0]):
+        for j in range(tumor.shape[1]):
+            if tumor[i,j] != 0:
+                intensity.append(tumor[i,j])           
+    minIntensity = min(intensity)
 
-    cv2.imwrite('results/Tumor_delineado_'+ image_name[5:-7] + '.jpg', cv2.cvtColor(edgeRTumor, cv2.COLOR_RGB2BGR))
+    # Segmentacion del tumor completo
 
-    return tumor, edgeRTumor
+    onlyTumor = imgData
+    upperMask = lowerMask = maskDilation
+    # Segmentacion superior del tumor
+    n = nSlice
+    while n < imgData.shape[2]:
+        upperSlice = np.array(onlyTumor[:, :, a-n])
+        upperSlice = upperSlice*upperMask
+        onlyTumor[:, :, a-n] = upperSlice
+
+        for i in range(upperSlice.shape[0]):
+            for j in range(upperSlice.shape[1]):
+                if upperSlice[i,j] <= minIntensity:
+                    onlyTumor[i, j, a-n] = 0
+        _, upperMask = cv2.threshold(np.uint8(onlyTumor[:, :, a-n]), 1, 255, cv2.THRESH_BINARY)
+        upperMask = np.array(np.float64(upperMask/255))
+        n += 1
+
+    # Segmentacion inferior del tumor
+    n = nSlice - 1
+    while n >= 0:
+        lowerSlice = np.array(onlyTumor[:, :, a-n])
+        lowerSlice = lowerSlice*lowerMask
+        onlyTumor[:, :, a-n] = lowerSlice
+
+        for i in range(lowerSlice.shape[0]):
+            for j in range(lowerSlice.shape[1]):
+                if lowerSlice[i,j] <= minIntensity:
+                    onlyTumor[i,j, a-n] = 0
+        _, lowerMask = cv2.threshold(np.uint8(onlyTumor[:, :, a-n]), 1, 255, cv2.THRESH_BINARY)
+        lowerMask = np.array(np.float64(lowerMask/255))
+        n -= 1
+
+    allTumor = nib.nifti1.Nifti1Image(onlyTumor, None, header=img.header)
+
+    return edgeRTumor, allTumor
 
 def main():
-    sliceTumor, edgeTumor =  tumor_extraction('data/case_014_2.nii.gz', 17)
+    sliceTumorBorder, tumor =  tumor_segmentation('data/case_014_2.nii.gz', 17)
 
-    plt.imshow(sliceTumor, cmap=plt.cm.gist_gray), plt.axis('off'), plt.title('Slice tumor segmentado')
-    plt.show()
+    # Guarda slice del tumor delineado
+    cv2.imwrite('results/Tumor_delineado_case_014_2.jpg', cv2.cvtColor(sliceTumorBorder, cv2.COLOR_RGB2BGR))
+
+    # Guarda la extraccion del tumor completo
+    nib.save(tumor, 'results/Tumor_completo_case_014_2.nii')
 
 if __name__ == "__main__":
     main()
