@@ -119,14 +119,32 @@ def tumor_segmentation(imageName, nSlice):
 
     return edgeRTumor, allTumor
 
+def tumor_volume(tumor):
+    x, y, z = tumor.header.get_zooms()
+    tumor = tumor.get_fdata()
+
+    n = nVoxel = 0
+    while n < tumor.shape[2]:
+        for i in range(tumor.shape[0]):
+            for j in range(tumor.shape[1]):
+                if tumor[i, j, n] != 0:
+                    nVoxel += 1
+        n += 1
+
+    return (x * y * z * nVoxel)
+
 def main():
     sliceTumorBorder, tumor =  tumor_segmentation('data/case_014_2.nii.gz', 17)
+    volume = tumor_volume(tumor)
 
     # Guarda slice del tumor delineado
     cv2.imwrite('results/Tumor_delineado_case_014_2.jpg', cv2.cvtColor(sliceTumorBorder, cv2.COLOR_RGB2BGR))
 
     # Guarda la extraccion del tumor completo
     nib.save(tumor, 'results/Tumor_completo_case_014_2.nii')
+
+    # Calculo del volumen del tumor
+    print(f"Volumen: {volume} mm2")
 
 if __name__ == "__main__":
     main()
