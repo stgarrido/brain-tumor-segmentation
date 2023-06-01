@@ -19,29 +19,42 @@ Previamente se realiza la elección del slice a trabajar con el software BrainVI
 
 ## Instalación
 
-Se debe preparar el entorno virtual con los paquetes necesarios su funcionamiento:
+Es necesario tener instalado Python en su dispositivo. Se debe preparar un entorno virtual con los paquetes necesarios su funcionamiento:
 
-.. code-block:: bash
+```bash
+# Instalación de virtualenv (solo si no lo tiene)
+pip install virtualenv
+# Creación de entorno virtual
+virtualenv env
+```
 
-  # Instalación de virtualenv
-  pip install virtualenv
-  # Creación de entorno virtual
-  virtualenv env
+La activación del entorno virtual depende del sistema operativo que se esté utilizando:
 
-La actualización del entorno virtual depende del sistema operativo que se esté utilizando:
+```bash
+# Comando Linux
+source env/Scripts/activate
+```
+```bash
+# Comando Windows
+source env/bin/activate
+```
 
-.. code-block:: bash
+Finalmente se deben instalar los paquetes a utilizar:
 
-  # Comando Linux
-  source env/Scripts/activate
-  # Comando Windows
-  source env/bin/activate
+```bash
+pip install -r requirements.txt
+```
 
-Finalmente se deben instalar los paquetes definidos:
+Para ejecutar el proyecto:
 
-.. code-block:: bash
-
-  pip install -r requirements.txt
+```bash
+# Comando Linux
+python3 main.py
+```
+```bash
+# Comando Windows
+py main.py
+```
 
 ## Resultados
 
@@ -55,10 +68,10 @@ Se adjuntan imágenes de los resultados obtenidos en las distintas etapas del pr
 
 <img alt="Máscara binaria" src="results/Mascara_binaria_case_014_2.jpg?raw=true" name="binaryMask" width="320"></img> <img alt="Máscara tumor" src="results/Mascara_tumor_case_014_2.jpg?raw=true" name="tumorMask" width="320"></img>
 
+### Borde del tumor
+
+<img alt="Borde del tumor" src="results/Borde_tumor_case_014_2.jpg?raw=true" name="tumorBorder" width="320"></img>
+
 ### Tumor con detección de borde
 
-<img alt="Tumor delineado" src="results/Tumor_delineado_case_014_2.jpg?raw=true" name="tumorBorder" width="320"></img>
-
-<!-- ### Tumor segmentado -->
-
-<!-- <img alt="Tumor segmentado" src="results/Tumor_segmentado_case_014_2.jpg?raw=true" name="kmeans" width="320"></img> -->
+<img alt="Tumor delineado" src="results/Tumor_delineado_case_014_2.jpg?raw=true" name="sliceTumorBorder" width="320"></img>

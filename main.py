@@ -79,9 +79,9 @@ def tumor_segmentation(imageName, nSlice):
   minIntensity = min(intensity)
 
   # Segmentacion del tumor completo
-
   onlyTumor = imgData
   upperMask = lowerMask = maskDilation
+
   # Segmentacion superior del tumor
   n = nSlice
   while n < imgData.shape[2]:
@@ -114,7 +114,7 @@ def tumor_segmentation(imageName, nSlice):
 
   allTumor = nib.nifti1.Nifti1Image(onlyTumor, None, header=img.header)
 
-  return edgeRTumor, allTumor, mask, kmeansSlice, maskTumor
+  return allTumor, kmeansSlice, mask, maskTumor, edgeTumor, edgeRTumor
 
 def tumor_volume(tumor):
   x, y, z = tumor.header.get_zooms()
@@ -131,14 +131,19 @@ def tumor_volume(tumor):
   return (x * y * z * nVoxel)
 
 def main():
-  sliceTumorBorder, tumor, binaryMask, kmeans, tumorMask=  tumor_segmentation('data/case_014_2.nii.gz', 17)
+  tumor, kmeansSlice, binaryMask, tumorMask, tumorBorder, sliceTumorBorder =  tumor_segmentation('data/case_014_2.nii.gz', 17)
   volume = tumor_volume(tumor)
 
+  # Guarda el slice agrupado según la intensidad de vóxels
+  cv2.imwrite('results/Etiqueta_kmeans_case_014_2.jpg', cv2.cvtColor(kmeansSlice, cv2.COLOR_RGB2BGR))
+  # Guarda la máscara binaria
+  cv2.imwrite('results/Mascara_binaria_case_014_2.jpg', cv2.cvtColor(binaryMask, cv2.COLOR_RGB2BGR))
+  # Guarda la máscara binaria del tumor
+  cv2.imwrite('results/Mascara_tumor_case_014_2.jpg', cv2.cvtColor(tumorMask, cv2.COLOR_RGB2BGR))
+  # Guarda el borde detectado del tumor
+  cv2.imwrite('results/Borde_tumor_case_014_2.jpg', cv2.cvtColor(tumorBorder, cv2.COLOR_RGB2BGR))
   # Guarda slice del tumor delineado
   cv2.imwrite('results/Tumor_delineado_case_014_2.jpg', cv2.cvtColor(sliceTumorBorder, cv2.COLOR_RGB2BGR))
-  cv2.imwrite('results/Etiqueta_kmeans_case_014_2.jpg', cv2.cvtColor(kmeans, cv2.COLOR_RGB2BGR))
-  cv2.imwrite('results/Mascara_binaria_case_014_2.jpg', cv2.cvtColor(binaryMask, cv2.COLOR_RGB2BGR))
-  cv2.imwrite('results/Mascara_tumor_case_014_2.jpg', cv2.cvtColor(tumorMask, cv2.COLOR_RGB2BGR))
 
   # Guarda la extraccion del tumor completo
   nib.save(tumor, 'results/Tumor_completo_case_014_2.nii')
