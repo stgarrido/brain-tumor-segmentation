@@ -68,10 +68,10 @@ Se adjuntan imágenes de los resultados obtenidos en las distintas etapas del pr
 
 <img alt="Máscara binaria" src="results/Mascara_binaria_case_014_2.jpg?raw=true" name="binaryMask" width="320"></img> <img alt="Máscara tumor" src="results/Mascara_tumor_case_014_2.jpg?raw=true" name="tumorMask" width="320"></img>
 
+### Borde del tumor
+
+<img alt="Borde del tumor" src="results/Borde_tumor_case_014_2.jpg?raw=true" name="tumorBorder" width="320"></img>
+
 ### Tumor con detección de borde
 
-<img alt="Tumor delineado" src="results/Tumor_delineado_case_014_2.jpg?raw=true" name="tumorBorder" width="320"></img>
-
-<!-- ### Tumor segmentado -->
-
-<!-- <img alt="Tumor segmentado" src="results/Tumor_segmentado_case_014_2.jpg?raw=true" name="kmeans" width="320"></img> -->
+<img alt="Tumor delineado" src="results/Tumor_delineado_case_014_2.jpg?raw=true" name="sliceTumorBorder" width="320"></img>
